@@ -11,20 +11,10 @@ export class ImageGalleryItem extends Component {
 
   openModal = () => {
     this.setState({ isModalOpen: true });
-    window.addEventListener('keydown', this.closeModalByEsc);
-    document.body.style.overflow = 'hidden';
   };
 
   closeModal = () => {
     this.setState({ isModalOpen: false });
-    window.removeEventListener('keydown', this.closeModalByEsc);
-    document.body.style.overflow = 'auto';
-  };
-
-  closeModalByEsc = event => {
-    if (event.code === 'Escape') {
-      this.closeModal();
-    }
   };
 
   render() {

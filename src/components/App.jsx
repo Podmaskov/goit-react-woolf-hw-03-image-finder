@@ -12,23 +12,27 @@ import 'react-toastify/dist/ReactToastify.min.css';
 export class App extends Component {
   state = { images: [], totalHits: 0, page: 1, query: '', isLoading: false };
 
-  handlerSearchSubmit = async query => {
-    try {
-      this.setState({ images: [], isLoading: true });
-      const response = await getImages(query, 1);
-      const { images: newImages, totalHits } = response;
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      prevState.query !== this.state.query ||
+      prevState.page !== this.state.page
+    ) {
+      this.loadImages();
+    }
+  }
 
+  loadImages = async () => {
+    try {
+      const response = await getImages(this.state.query, this.state.page);
+      const { images: newImages, totalHits } = response;
       if (newImages.length === 0) {
         toast.info('Unfortunately, there are no images on your request');
         return;
       }
-
-      this.setState({
-        images: [...newImages],
+      this.setState(prevState => ({
+        images: [...prevState.images, ...newImages],
         totalHits,
-        page: 1,
-        query,
-      });
+      }));
     } catch (error) {
       toast.error('Sorry, something went wrong. Try again');
     } finally {
@@ -36,21 +40,13 @@ export class App extends Component {
     }
   };
 
+  handlerSearchSubmit = async query => {
+    if (!query || this.state.query === query) return;
+    this.setState({ images: [], query, page: 1, isLoading: true });
+  };
+
   loadMoreImages = async () => {
-    try {
-      this.setState({ isLoading: true });
-      const { page, query } = this.state;
-      const response = await getImages(query, page + 1);
-      const newImages = response.images;
-      this.setState(prevState => ({
-        images: [...prevState.images, ...newImages],
-        page: prevState.page + 1,
-      }));
-    } catch (error) {
-      toast.error('Sorry, something went wrong. Try again');
-    } finally {
-      this.setState({ isLoading: false });
-    }
+    this.setState({ isLoading: true, page: this.state.page + 1 });
   };
 
   renderLoadMoreBtn = () => {
